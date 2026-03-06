@@ -1,209 +1,122 @@
-# CloseWon Contract Automation
+# Salesforce to DocuSign Contract Automation
 
-Automatically send DocuSign contracts when Salesforce opportunities are marked as Closed-Won.
+## Description
 
-## Overview
+This integration automatically sends DocuSign contracts when Salesforce opportunities are marked as "Closed Won". It listens to Salesforce change events in real-time and triggers contract creation based on configurable business rules.
 
-This Ballerina integration listens to Salesforce opportunity change events and automatically triggers DocuSign contract creation and dispatch when an opportunity reaches the "Closed Won" stage and meets configured criteria.
+### What It Does
 
-**Key Technologies:**
-- `ballerinax/salesforce` - Salesforce connector for event listening and data retrieval
-- `ballerinax/docusign.dsesign` - Official DocuSign eSignature connector for envelope creation
+- Listens to Salesforce Opportunity change events using Change Data Capture
+- Validates opportunities meet business criteria (stage = "Closed Won", minimum deal value)
+- Retrieves the appropriate contact based on configured signer role
+- Selects the correct DocuSign template based on opportunity type
+- Creates and sends DocuSign envelope with:
+  - Pre-filled fields from Salesforce opportunity data
+  - Configured signer (Primary Contact, Billing Contact, etc.)
+  - CC recipients (Legal, Sales Ops, Finance)
+  - Custom email subject and routing order
+- Updates Salesforce opportunity stage to "Contract Sent"
+- Provides comprehensive error handling and logging
 
-## Features
+## Prerequisites
 
-- **Event-Driven Architecture**: Listens to Salesforce Platform Events for real-time opportunity updates
-- **Configurable Business Rules**: Set minimum deal values and other criteria for contract dispatch
-- **Flexible Signer Selection**: Choose from primary contact, billing contact, or other roles
-- **Template Management**: Support multiple DocuSign templates based on product/deal type
-- **Field Mapping**: Automatically pre-fill DocuSign fields from Salesforce opportunity data
-- **CC Recipients**: Configure multiple CC recipients for contract notifications
-- **Expiration Reminders**: Set expiration reminder days per template
-- **Stage Updates**: Automatically update opportunity stage to "Contract Sent" after dispatch
+Before running this integration, you need:
 
-## Architecture
+### Salesforce Setup
 
-### Components
+1. A Salesforce account with API access
+2. **Change Data Capture** enabled for the Opportunity object
+3. OAuth2 credentials for API calls:
+   - Client ID
+   - Client Secret
+   - Refresh Token
+   - Refresh URL
+   - Base URL (your Salesforce instance URL)
+4. Username and password (with security token) for event listener
 
-- **main.bal**: Salesforce listener service that handles opportunity change events
-- **automation.bal**: Core automation logic for contract creation and dispatch
-- **functions.bal**: Helper functions for Salesforce data retrieval and business logic
-- **connections.bal**: Client and listener initialization
-- **types.bal**: Type definitions for Salesforce and DocuSign data structures
-- **config.bal**: Configuration variables
-- **data_mappings.bal**: Data transformation utilities
-- **agents.bal**: Placeholder for future AI agent integrations
+This integration uses both username/password authentication for the listener and refresh token flow for API calls. [Learn how to set up Salesforce OAuth](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5).
+
+### DocuSign Setup
+
+1. A DocuSign account (demo or production)
+2. Contract templates created with named fields
+3. OAuth2 credentials:
+   - Account ID
+   - Access Token
+4. Scopes Required:
+   - `signature`
+   - `impersonation`
+
+This integration uses the official `ballerinax/docusign.dsesign` connector with access token authentication. [Learn how to get DocuSign credentials](https://developers.docusign.com/platform/auth/).
 
 ## Configuration
 
-Create a `Config.toml` file with the following configuration:
+The following configurations are required to connect to Salesforce and DocuSign.
 
-### Salesforce Configuration
+### Salesforce Credentials
 
-```toml
-# Listener authentication (username/password)
-salesforceUsername = "your-username@example.com"
-salesforcePassword = "your-password-with-security-token"
+- `salesforceUsername` - Your Salesforce username for listener authentication
+- `salesforcePassword` - Your Salesforce password with security token appended
+- `salesforceClientId` - Your Salesforce OAuth2 client ID
+- `salesforceClientSecret` - Your Salesforce OAuth2 client secret
+- `salesforceRefreshToken` - Your Salesforce OAuth2 refresh token
+- `salesforceRefreshUrl` - Salesforce OAuth2 token endpoint (e.g., `https://login.salesforce.com/services/oauth2/token`)
+- `salesforceBaseUrl` - Your Salesforce instance URL (e.g., `https://login.salesforce.com`)
+- `salesforceChannelName` - Change event channel (default: `/data/ChangeEvents`)
 
-# Client API authentication (OAuth)
-salesforceClientId = "your-connected-app-client-id"
-salesforceClientSecret = "your-connected-app-client-secret"
-salesforceRefreshToken = "your-refresh-token"
-salesforceRefreshUrl = "https://login.salesforce.com/services/oauth2/token"
-salesforceBaseUrl = "https://login.salesforce.com"
+### DocuSign Credentials
 
-# Change event channel
-salesforceChannelName = "/data/ChangeEvents"
-```
-
-### DocuSign Configuration
-
-```toml
-docusignAccountId = "your-account-id"
-docusignAccessToken = "your-access-token"
-docusignBaseUrl = "https://demo.docusign.net/restapi"
-```
-
-**Note:** The integration uses the official `ballerinax/docusign.dsesign` connector. Ensure you have a valid DocuSign access token with the required scopes for envelope creation.
+- `docusignAccountId` - Your DocuSign account ID
+- `docusignAccessToken` - Your DocuSign OAuth2 access token
+- `docusignBaseUrl` - DocuSign API base URL (e.g., `https://demo.docusign.net/restapi` for demo)
 
 ### Template Configuration
 
-```toml
-# Default template
-defaultTemplateId = "your-default-template-id"
-
-# Multiple templates by product/deal type
-[[templateConfigs]]
-templateId = "template-id-for-enterprise"
-productType = "Enterprise"
-expirationDays = 7
-
-[[templateConfigs]]
-templateId = "template-id-for-professional"
-productType = "Professional"
-expirationDays = 5
-```
-
-### Signer Configuration
-
-```toml
-# Signer role selection
-# Options: "Primary Contact", "Billing Contact", "Decision Maker", "Executive Sponsor"
-signerRole = "Primary Contact"
-
-# CC recipients
-[[ccRecipients]]
-email = "legal@yourcompany.com"
-name = "Legal Team"
-
-[[ccRecipients]]
-email = "sales-ops@yourcompany.com"
-name = "Sales Operations"
-```
-
-### Field Mappings
-
-```toml
-[[fieldMappings]]
-opportunityField = "Name"
-docusignField = "OpportunityName"
-
-[[fieldMappings]]
-opportunityField = "Amount"
-docusignField = "ContractValue"
-
-[[fieldMappings]]
-opportunityField = "CloseDate"
-docusignField = "CloseDate"
-```
+- `defaultTemplateId` - Default DocuSign template ID to use
+- `templateConfigs` - Array of template configurations for different product/deal types
+  - `templateId` - DocuSign template ID
+  - `productType` - Opportunity type to match (optional)
+  - `dealType` - Deal type to match (optional)
+  - `expirationDays` - Days until expiration reminder (optional)
 
 ### Business Rules
 
-```toml
-minimumDealValue = 10000.0
-expirationReminderDays = 3
-contractSentStage = "Contract Sent"
-```
+- `minimumDealValue` - Minimum opportunity amount to trigger contract (default: 0.0)
+- `signerRole` - Contact role to use as signer (options: "Primary Contact", "Billing Contact", "Decision Maker", "Executive Sponsor")
+- `ccRecipients` - Array of CC recipients
+  - `email` - Recipient email address
+  - `name` - Recipient name
+- `fieldMappings` - Array of field mappings from Salesforce to DocuSign
+  - `opportunityField` - Salesforce Opportunity field name
+  - `docusignField` - DocuSign template field label
+- `contractSentStage` - Opportunity stage to set after sending contract (default: "Contract Sent")
+- `expirationReminderDays` - Default expiration reminder days (default: 3)
 
-## Setup Instructions
+## Deploying on **Choreo**
 
-### Prerequisites
+1. Sign in to your Choreo account.
+2. Create a new Integration and follow instructions in [Choreo Documentation](https://wso2.com/choreo/docs/) to import this repository.
+3. Select the **Technology** as `Ballerina`.
+4. Choose the **Integration** Type as `Service` and click **Create**.
+5. Once the build is successful, click **Configure to Continue** and set up the required environment variables for Salesforce and DocuSign credentials.
+6. Click **Deploy** to deploy the integration.
+7. The integration will start listening to Salesforce change events automatically.
+8. Monitor logs to verify successful contract dispatch.
+9. Once tested, you may promote the integration to production. Make sure to set the relevant environment variables in the production environment as well.
 
-1. **Salesforce Setup**:
-   - Enable Change Data Capture for Opportunity object
-   - Create a Connected App for OAuth authentication
-   - Obtain OAuth credentials (client ID, client secret, refresh token)
-   - Create a user with API access for the listener
-
-2. **DocuSign Setup**:
-   - Create DocuSign account (demo or production)
-   - Create contract templates with named fields
-   - Generate access token for API authentication
-   - Note your account ID
-
-### Installation
+## Running Locally
 
 1. Clone this repository
-2. Create `Config.toml` with your credentials
+2. Create a `Config.toml` file with your credentials (see `Config.toml` for sample configuration)
 3. Run the integration:
 
 ```bash
 bal run
 ```
 
-## How It Works
-
-1. **Event Reception**: The Salesforce listener receives opportunity update events
-2. **Criteria Check**: The system validates:
-   - Opportunity stage is "Closed Won"
-   - Deal value meets minimum threshold
-   - Required data is present
-3. **Contact Retrieval**: Fetches the appropriate signer based on configured role
-4. **Template Selection**: Chooses the right template based on opportunity type
-5. **Envelope Creation**: Creates DocuSign envelope with:
-   - Pre-filled fields from opportunity data
-   - Configured signer
-   - CC recipients
-   - Expiration settings
-6. **Stage Update**: Updates Salesforce opportunity to "Contract Sent"
-
-## Data Flow
-
-```
-Salesforce Opportunity Update (Closed Won)
-    ↓
-Salesforce Platform Event
-    ↓
-Ballerina Listener Service
-    ↓
-Validation & Business Rules Check
-    ↓
-Retrieve Contact Information
-    ↓
-Select DocuSign Template
-    ↓
-Create & Send DocuSign Envelope
-    ↓
-Update Salesforce Opportunity Stage
-```
-
-## Error Handling
-
-The integration includes comprehensive error handling:
-- Validates opportunity and contact data
-- Checks for missing required fields
-- Handles DocuSign API errors
-- Logs all operations for troubleshooting
-
-## Extensibility
-
-### Future Enhancements
-
-The `agents.bal` file provides a foundation for AI-powered features:
-- Contract review and analysis
-- Intelligent template selection
-- Risk assessment
-- Automated field extraction
+4. The integration will start listening to Salesforce change events
+5. Update an opportunity to "Closed Won" stage in Salesforce to trigger contract dispatch
+6. Check logs for processing status and DocuSign envelope ID
 
 ## Troubleshooting
 
@@ -211,19 +124,28 @@ The `agents.bal` file provides a foundation for AI-powered features:
 
 1. **Authentication Errors**:
    - Verify Salesforce credentials and security token
-   - Check OAuth token validity
-   - Ensure Connected App permissions
+   - Check OAuth token validity and refresh token
+   - Ensure Connected App permissions are correct
+   - Verify DocuSign access token is valid
 
 2. **Event Not Received**:
-   - Verify Change Data Capture is enabled for Opportunity
-   - Check channel name configuration
-   - Review Salesforce event monitoring
+   - Verify Change Data Capture is enabled for Opportunity object in Salesforce
+   - Check channel name configuration matches Salesforce setup
+   - Review Salesforce event monitoring logs
+   - Ensure listener credentials have API access
 
 3. **DocuSign Errors**:
-   - Verify template ID exists
-   - Check field names match template
-   - Ensure access token is valid
+   - Verify template ID exists in your DocuSign account
+   - Check field names in template match configured field mappings
+   - Ensure access token has required scopes
+   - Verify account ID is correct
 
-## License
+4. **Contact Not Found**:
+   - Ensure opportunity has contacts with the configured role
+   - Check OpportunityContactRole records in Salesforce
+   - Verify at least one contact is marked as primary
 
-Copyright © 2024. All rights reserved.
+5. **Validation Errors**:
+   - Check opportunity has required fields (Name, Amount)
+   - Verify contact has valid email address
+   - Ensure opportunity amount meets minimum threshold
