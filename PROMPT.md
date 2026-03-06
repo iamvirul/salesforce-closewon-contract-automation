@@ -87,6 +87,7 @@ Create a Ballerina integration that automatically sends DocuSign contracts when 
 
 ## Data Flow
 
+### High-Level Flow
 ```
 1. Salesforce Opportunity Updated (Stage → "Closed Won")
    ↓
@@ -121,6 +122,36 @@ Create a Ballerina integration that automatically sends DocuSign contracts when 
 14. Log Success/Failure
 ```
 
+### Detailed Flow Diagram
+
+A detailed Mermaid flow diagram is available in `.choreo/diagram.md` that visualizes:
+- Event reception and filtering
+- Business rule validation (stage check, minimum value)
+- Contact retrieval with fallback logic
+- Template selection based on opportunity type
+- Envelope creation and dispatch
+- Error handling paths
+- Success and failure outcomes
+
+This diagram is rendered in the WSO2 Integration Platform when selecting the prebuilt integration.
+
+#### Diagram Node Styles
+
+The flow diagram uses the following node styles to represent different types of operations:
+
+- **startNode**: Denotes a start node (entry point of the flow)
+- **endNode**: Denotes an end node (exit point of the flow)
+- **processNode**: Denotes a process node (actions, operations, transformations)
+- **decisionNode**: Denotes a decision node (conditional checks, branching logic)
+
+Example usage in Mermaid syntax:
+```mermaid
+A(["Start"]):::startNode
+B["Process Data"]:::processNode
+C{"Is Valid?"}:::decisionNode
+D(["End"]):::endNode
+```
+
 ## Implementation Structure
 
 ### File Organization
@@ -134,6 +165,8 @@ Create a Ballerina integration that automatically sends DocuSign contracts when 
 - **agents.bal**: Placeholder for future AI-powered features
 - **Config.toml**: Configuration values (credentials, mappings, rules)
 - **README.md**: Documentation and setup instructions
+- **PROMPT.md**: Detailed integration specification and requirements
+- **.choreo/diagram.md**: Mermaid flow diagram for visual representation
 
 ### Key Functions
 
