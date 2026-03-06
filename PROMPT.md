@@ -152,6 +152,19 @@ C{"Is Valid?"}:::decisionNode
 D(["End"]):::endNode
 ```
 
+### Setup Instructions
+
+A comprehensive setup guide is available in `.choreo/instructions.md` that provides:
+- Detailed "What It Does" summary
+- Collapsible sections for Salesforce setup with step-by-step instructions
+- Collapsible sections for DocuSign setup with template creation guide
+- Configuration parameters with descriptions and default values
+- Field mapping examples and customization options
+- Template configuration examples for single and multiple templates
+- CC recipients configuration guide
+
+This file is rendered during prebuilt integration setup in the WSO2 Integration Platform, providing users with an interactive setup experience.
+
 ## Implementation Structure
 
 ### File Organization
@@ -167,6 +180,7 @@ D(["End"]):::endNode
 - **README.md**: Documentation and setup instructions
 - **PROMPT.md**: Detailed integration specification and requirements
 - **.choreo/diagram.md**: Mermaid flow diagram for visual representation
+- **.choreo/instructions.md**: Setup instructions rendered in WSO2 Integration Platform
 
 ### Key Functions
 
