@@ -120,14 +120,6 @@ function getOpportunityFieldValue(Opportunity opportunity, string fieldName) ret
 
 // Update Salesforce opportunity stage
 function updateOpportunityStage(string opportunityId, string stageName) returns error? {
-    // Create update record
-    record {string StageName;} updateData = {
-        StageName: stageName
-    };
-    
-    // Update using Salesforce client
-    string updatePath = string `/services/data/v59.0/sobjects/Opportunity/${opportunityId}`;
-    
     // Note: The Salesforce client doesn't have a direct update method
     // We'll log the update for now - in production, you'd use the REST API directly
     log:printInfo(string `Would update opportunity ${opportunityId} stage to ${stageName}`);
