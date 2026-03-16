@@ -82,3 +82,41 @@ public type FieldMapping record {
     string opportunityField;
     string docusignField;
 };
+
+// Salesforce Configuration Record
+public type SalesforceConfig record {|
+    string username;
+    string password;
+    string clientId;
+    string clientSecret;
+    string refreshToken;
+    string refreshUrl = "https://login.salesforce.com/services/oauth2/token";
+    string baseUrl = "https://login.salesforce.com";
+    string channelName = "/data/ChangeEvents";
+|};
+
+// DocuSign Configuration Record
+public type DocusignConfig record {|
+    string accountId;
+    string clientId;
+    string clientSecret;
+    string refreshToken;
+    string refreshUrl = "https://account-d.docusign.com/oauth/token";
+    string baseUrl = "https://demo.docusign.net/restapi";
+|};
+
+// Template Settings Record
+public type TemplateSettings record {|
+    string defaultTemplateId;
+    TemplateConfig[] templateConfigs;
+|};
+
+// Business Rules Configuration Record
+public type BusinessRulesConfig record {|
+    decimal minimumDealValue;
+    SignerRole signerRole;
+    CcRecipient[] ccRecipients;
+    FieldMapping[] fieldMappings;
+    string contractSentStage;
+    int expirationReminderDays;
+|};

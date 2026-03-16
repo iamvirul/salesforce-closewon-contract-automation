@@ -2,9 +2,17 @@ import ballerinax/salesforce;
 import ballerinax/'client.config as clientConfig;
 import ballerinax/docusign.dsesign;
 
+// Salesforce OAuth configuration for client
+final clientConfig:OAuth2RefreshTokenGrantConfig salesforceOAuthConfig = {
+    clientId: salesforceConfig.clientId,
+    clientSecret: salesforceConfig.clientSecret,
+    refreshToken: salesforceConfig.refreshToken,
+    refreshUrl: salesforceConfig.refreshUrl
+};
+
 // Salesforce Client Configuration
 final salesforce:Client salesforceClient = check new ({
-    baseUrl: salesforceBaseUrl,
+    baseUrl: salesforceConfig.baseUrl,
     auth: salesforceOAuthConfig
 });
 
@@ -12,33 +20,20 @@ final salesforce:Client salesforceClient = check new ({
 final dsesign:Client docusignClient = check new (
     config = {
         auth: {
-            token: docusignAccessToken
+            clientId: docusignConfig.clientId,
+            clientSecret: docusignConfig.clientSecret,
+            refreshToken: docusignConfig.refreshToken,
+            refreshUrl: docusignConfig.refreshUrl
         }
     },
-    serviceUrl = docusignBaseUrl
+    serviceUrl = docusignConfig.baseUrl
 );
-
-// Salesforce base URL
-configurable string salesforceBaseUrl = "https://login.salesforce.com";
-
-// Salesforce OAuth configuration for client
-configurable string salesforceClientId = ?;
-configurable string salesforceClientSecret = ?;
-configurable string salesforceRefreshToken = ?;
-configurable string salesforceRefreshUrl = "https://login.salesforce.com/services/oauth2/token";
-
-final clientConfig:OAuth2RefreshTokenGrantConfig salesforceOAuthConfig = {
-    clientId: salesforceClientId,
-    clientSecret: salesforceClientSecret,
-    refreshToken: salesforceRefreshToken,
-    refreshUrl: salesforceRefreshUrl
-};
 
 // Salesforce listener configuration
 final salesforce:ListenerConfig salesforceListenerConfig = {
     auth: {
-        username: salesforceUsername,
-        password: salesforcePassword
+        username: salesforceConfig.username,
+        password: salesforceConfig.password
     }
 };
 

@@ -51,6 +51,8 @@ Configurations are organized by vendor-specific records for better structure and
 
 ### Salesforce Configuration (`salesforceConfig`)
 
+Record type: `SalesforceConfig`
+
 - `username` - Your Salesforce username for listener authentication
 - `password` - Your Salesforce password with security token appended
 - `clientId` - Your Salesforce OAuth2 client ID
@@ -58,10 +60,13 @@ Configurations are organized by vendor-specific records for better structure and
 - `refreshToken` - Your Salesforce OAuth2 refresh token
 - `refreshUrl` - Salesforce OAuth2 token endpoint (default: `https://login.salesforce.com/services/oauth2/token`)
 - `baseUrl` - Your Salesforce instance URL (default: `https://login.salesforce.com`)
+- `channelName` - Salesforce event channel to listen to (default: `/data/ChangeEvents`)
 
-**Note**: The integration listens to the `/data/ChangeEvents` channel which captures all object changes. To listen to only Opportunity changes, modify the service path in `main.bal` to `/data/OpportunityChangeEvent`.
+**Note**: The default channel `/data/ChangeEvents` captures all object changes. To listen to only Opportunity changes, set `channelName` to `/data/OpportunityChangeEvent`.
 
 ### Docusign Configuration (`docusignConfig`)
+
+Record type: `DocusignConfig`
 
 - `accountId` - Your Docusign account ID
 - `clientId` - Your Docusign OAuth2 client ID (Integration Key)
@@ -72,6 +77,8 @@ Configurations are organized by vendor-specific records for better structure and
 
 ### Template Configuration (`templateSettings`)
 
+Record type: `TemplateSettings`
+
 - `defaultTemplateId` - Default Docusign template ID to use
 - `templateConfigs` - Array of template configurations for different product/deal types
   - `templateId` - Docusign template ID
@@ -80,6 +87,8 @@ Configurations are organized by vendor-specific records for better structure and
   - `expirationDays` - Days until expiration reminder (optional)
 
 ### Business Rules Configuration (`businessRulesConfig`)
+
+Record type: `BusinessRulesConfig`
 
 - `minimumDealValue` - Minimum opportunity amount to trigger contract (default: 0.0)
 - `signerRole` - Contact role to use as signer (options: "Primary Contact", "Billing Contact", "Decision Maker", "Executive Sponsor")

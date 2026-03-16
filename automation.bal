@@ -20,7 +20,7 @@ function createAndSendEnvelope(Opportunity opportunity, Contact signer, Template
     // Build CC recipients if configured
     CarbonCopy[] carbonCopies = [];
     int ccRoutingOrder = 2;
-    foreach CcRecipient ccRecipient in ccRecipients {
+    foreach CcRecipient ccRecipient in businessRulesConfig.ccRecipients {
         CarbonCopy ccCopy = {
             email: ccRecipient.email,
             name: ccRecipient.name,
@@ -85,7 +85,7 @@ function createAndSendEnvelope(Opportunity opportunity, Contact signer, Template
     envelopeDefinition.templateRoles = templateRoles;
     
     // Create envelope using DocuSign client
-    dsesign:EnvelopeSummary envelopeSummary = check docusignClient->/accounts/[docusignAccountId]/envelopes.post(envelopeDefinition);
+    dsesign:EnvelopeSummary envelopeSummary = check docusignClient->/accounts/[docusignConfig.accountId]/envelopes.post(envelopeDefinition);
     
     string? envelopeId = envelopeSummary.envelopeId;
     if envelopeId is () {
@@ -100,7 +100,7 @@ function createAndSendEnvelope(Opportunity opportunity, Contact signer, Template
 function buildTemplateFields(Opportunity opportunity) returns record {string name; string value;}[] {
     record {string name; string value;}[] fields = [];
     
-    foreach FieldMapping mapping in fieldMappings {
+    foreach FieldMapping mapping in businessRulesConfig.fieldMappings {
         string opportunityField = mapping.opportunityField;
         string docusignField = mapping.docusignField;
         
@@ -161,7 +161,7 @@ public function processOpportunityForContract(string opportunityId) returns erro
     log:printInfo(string `DocuSign envelope ${envelopeId} sent for opportunity ${opportunityId}`);
     
     // Update opportunity stage to "Contract Sent"
-    check updateOpportunityStage(opportunityId, contractSentStage);
+    check updateOpportunityStage(opportunityId, businessRulesConfig.contractSentStage);
     
     log:printInfo(string `Successfully processed opportunity ${opportunityId}`);
 }
@@ -169,14 +169,14 @@ public function processOpportunityForContract(string opportunityId) returns erro
 // Get signer contact based on configured role
 function getSignerContact(string opportunityId) returns Contact|error {
     // Try to get contact by configured role
-    Contact|error contactResult = getContactByRole(opportunityId, signerRole);
+    Contact|error contactResult = getContactByRole(opportunityId, businessRulesConfig.signerRole);
     
     if contactResult is Contact {
         return contactResult;
     }
     
     // Fallback to primary contact
-    log:printWarn(string `Could not find contact with role ${signerRole}, falling back to primary contact`);
+    log:printWarn(string `Could not find contact with role ${businessRulesConfig.signerRole}, falling back to primary contact`);
     Contact primaryContact = check getPrimaryContact(opportunityId);
     return primaryContact;
 }

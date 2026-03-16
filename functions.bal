@@ -59,7 +59,7 @@ function getPrimaryContact(string opportunityId) returns Contact|error {
 // Select appropriate template based on opportunity
 function selectTemplate(Opportunity opportunity) returns TemplateConfig {
     // Check if there are configured templates
-    foreach TemplateConfig templateConfig in templateConfigs {
+    foreach TemplateConfig templateConfig in templateSettings.templateConfigs {
         string? productType = templateConfig.productType;
         string? dealType = templateConfig.dealType;
         string? oppType = opportunity.Type;
@@ -76,8 +76,8 @@ function selectTemplate(Opportunity opportunity) returns TemplateConfig {
     
     // Return default template
     return {
-        templateId: defaultTemplateId,
-        expirationDays: expirationReminderDays
+        templateId: templateSettings.defaultTemplateId,
+        expirationDays: businessRulesConfig.expirationReminderDays
     };
 }
 
@@ -148,8 +148,8 @@ function meetsDispatchCriteria(Opportunity opportunity) returns boolean {
         return false;
     }
     
-    if amount < minimumDealValue {
-        log:printInfo(string `Opportunity ${opportunity.Id} amount ${amount} is below minimum threshold ${minimumDealValue}`);
+    if amount < businessRulesConfig.minimumDealValue {
+        log:printInfo(string `Opportunity ${opportunity.Id} amount ${amount} is below minimum threshold ${businessRulesConfig.minimumDealValue}`);
         return false;
     }
     
