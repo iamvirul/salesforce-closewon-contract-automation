@@ -1,5 +1,3 @@
-```mermaid
-flowchart TD
     A(["Start"]):::startNode
     B["Listen to Salesforce Opportunity Change Events"]:::processNode
     C{"Is Event <br/> onUpdate?"}:::decisionNode
@@ -12,11 +10,11 @@ flowchart TD
     J{"Contact <br/> Found?"}:::decisionNode
     K["Fallback to Primary Contact"]:::processNode
     L["Validate Contact Data"]:::processNode
-    M["Select DocuSign Template by Opportunity Type"]:::processNode
+    M["Select Docusign Template by Opportunity Type"]:::processNode
     N["Build Pre-filled Fields from Opportunity"]:::processNode
-    O["Create DocuSign Envelope with Template"]:::processNode
+    O["Create Docusign Envelope with Template"]:::processNode
     P["Add Signer and CC Recipients"]:::processNode
-    Q["Send DocuSign Envelope"]:::processNode
+    Q["Send Docusign Envelope"]:::processNode
     R{"Envelope <br/> Created?"}:::decisionNode
     S["Update Opportunity Stage to 'Contract Sent'"]:::processNode
     T["Log Success with Envelope ID"]:::processNode
@@ -51,8 +49,3 @@ flowchart TD
     T --> W
     U --> W
 
-    classDef startNode fill:#90EE90,stroke:#333,stroke-width:2px,color:#000
-    classDef endNode fill:#FFB6C1,stroke:#333,stroke-width:2px,color:#000
-    classDef processNode fill:#87CEEB,stroke:#333,stroke-width:2px,color:#000
-    classDef decisionNode fill:#FFD700,stroke:#333,stroke-width:2px,color:#000
-```
