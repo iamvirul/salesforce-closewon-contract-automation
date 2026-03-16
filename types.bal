@@ -1,31 +1,37 @@
 // Salesforce Opportunity record
-public type Opportunity record {
+public type Opportunity record {|
     string Id;
-    string Name?;
-    string StageName?;
-    decimal Amount?;
-    string AccountId?;
-    string Type?;
-    string CloseDate?;
-};
+    string? Name;
+    string? StageName;
+    decimal? Amount;
+    string? AccountId;
+    string? Type;
+    string? CloseDate;
+    // Allow additional fields from Salesforce
+    json...;
+|};
 
 // Salesforce Contact record
-public type Contact record {
+public type Contact record {|
     string Id;
-    string FirstName?;
-    string LastName?;
-    string Email?;
-    string AccountId?;
-};
+    string? FirstName;
+    string? LastName;
+    string? Email;
+    string? AccountId;
+    // Allow additional fields from Salesforce
+    json...;
+|};
 
 // Salesforce OpportunityContactRole record
-public type OpportunityContactRole record {
+public type OpportunityContactRole record {|
     string Id;
     string OpportunityId;
     string ContactId;
-    string Role?;
-    boolean IsPrimary?;
-};
+    string? Role;
+    boolean? IsPrimary;
+    // Allow additional fields from Salesforce
+    json...;
+|};
 
 // Note: DocuSign types are now provided by ballerinax/docusign.dsesign connector
 // Custom types for our specific use case
