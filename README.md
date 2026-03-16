@@ -4,6 +4,8 @@
 
 This integration automatically sends Docusign contracts when Salesforce opportunities are marked as "Closed Won". It listens to Salesforce change events in real-time and triggers contract creation based on configurable business rules.
 
+> **Important**: This integration requires **SOAP API to be enabled** in your Salesforce org for the event listener to work. If you see "SOAP API login() is disabled" error, go to Setup → Session Settings → Enable "Allow SOAP API login".
+
 ### What It Does
 
 - Listens to Salesforce Opportunity change events and validates they meet business criteria (Closed Won stage, minimum deal value)
@@ -19,15 +21,18 @@ Before running this integration, you need:
 
 1. A Salesforce account with API access
 2. **Change Data Capture** enabled for the Opportunity object
-3. OAuth2 credentials for API calls:
+3. **SOAP API enabled** - Required for the event listener (CometD protocol)
+   - If you see "SOAP API login() is disabled" error, enable it in Setup → Session Settings → "Allow SOAP API login"
+   - Alternatively, contact your Salesforce administrator to enable SOAP API
+4. OAuth2 credentials for API calls:
    - Client ID
    - Client Secret
    - Refresh Token
    - Refresh URL
    - Base URL (your Salesforce instance URL)
-4. Username and password (with security token) for event listener
+5. Username and password (with security token appended) for event listener
 
-This integration uses both username/password authentication for the listener and refresh token flow for API calls. [Learn how to set up Salesforce OAuth](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5).
+This integration uses OAuth2 refresh token authentication for API calls and username/password authentication for the event listener (CometD protocol). [Learn how to set up Salesforce OAuth](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5).
 
 ### Docusign Setup
 
@@ -54,7 +59,7 @@ Configurations are organized by vendor-specific records for better structure and
 Record type: `SalesforceConfig`
 
 - `username` - Your Salesforce username for listener authentication
-- `password` - Your Salesforce password with security token appended
+- `password` - Your Salesforce password with security token appended (e.g., if password is "mypass" and token is "abc123", use "mypassabc123")
 - `clientId` - Your Salesforce OAuth2 client ID
 - `clientSecret` - Your Salesforce OAuth2 client secret
 - `refreshToken` - Your Salesforce OAuth2 refresh token
@@ -63,6 +68,8 @@ Record type: `SalesforceConfig`
 - `channelName` - Salesforce event channel to listen to (default: `/data/ChangeEvents`)
 
 **Note**: The default channel `/data/ChangeEvents` captures all object changes. To listen to only Opportunity changes, set `channelName` to `/data/OpportunityChangeEvent`.
+
+**Important**: The event listener uses SOAP API for authentication. If you encounter "SOAP API login() is disabled" error, you must enable SOAP API in your Salesforce org (Setup → Session Settings → "Allow SOAP API login").
 
 ### Docusign Configuration (`docusignConfig`)
 
@@ -116,9 +123,11 @@ Record type: `BusinessRulesConfig`
 ### Common Issues
 
 1. **Authentication Errors**:
-   - Verify Salesforce credentials and security token
+   - **SOAP API Disabled Error**: Enable SOAP API in Salesforce Setup → Session Settings → "Allow SOAP API login"
+   - Verify Salesforce username/password and security token for listener
+   - Verify Salesforce OAuth credentials (client ID, client secret, refresh token) for API calls
    - Check OAuth token validity and refresh token
-   - Ensure Connected App permissions are correct
+   - Ensure Connected App permissions are correct (API, Refresh Token, Access and manage your data)
    - Verify Docusign OAuth credentials (client ID, client secret, refresh token)
    - Ensure Docusign refresh URL matches your environment (demo vs production)
 
@@ -126,7 +135,8 @@ Record type: `BusinessRulesConfig`
    - Verify Change Data Capture is enabled for Opportunity object in Salesforce
    - Check channel name configuration matches Salesforce setup
    - Review Salesforce event monitoring logs
-   - Ensure listener credentials have API access
+   - Ensure SOAP API is enabled for listener authentication
+   - Verify username/password credentials have API access
 
 3. **Docusign Errors**:
    - Verify template ID exists in your Docusign account
